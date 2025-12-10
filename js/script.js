@@ -1,39 +1,47 @@
-const btn = document.getElementById("comprarBtn");
-const pixBox = document.getElementById("pixInfo");
-const qrImg = document.getElementById("qrCode");
-const copiaCola = document.getElementById("copiaCola");
-const statusLabel = document.getElementById("statusPagamento");
-const downloadBox = document.getElementById("download");
+document.getElementById('banForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Impede o envio tradicional do formulário
 
-let pagamentoID = null;
+    const userId = document.getElementById('userId').value.trim();
+    const reason = document.getElementById('reason').value.trim();
+    const statusMessage = document.getElementById('statusMessage');
+    const banButton = document.getElementById('banButton');
+    const buttonText = banButton.querySelector('.button-text');
+    const loadingSpinner = banButton.querySelector('.loading-spinner');
 
-btn.addEventListener("click", async () => {
-    pixBox.classList.remove("download-hidden");
+    statusMessage.textContent = ''; // Limpa mensagens anteriores
+    statusMessage.className = 'message';
 
-    const req = await fetch("/criar-pix", { method: "POST" });
-    const data = await req.json();
+    // 1. Validação simples
+    if (!/^\d{17,19}$/.test(userId)) {
+        statusMessage.classList.add('error');
+        statusMessage.textContent = '❌ Erro: O ID do usuário deve ter entre 17 e 19 dígitos numéricos (formato do Discord).';
+        return;
+    }
 
-    pagamentoID = data.id;
+    // 2. Simulação de Processamento
+    buttonText.style.display = 'none';
+    loadingSpinner.style.display = 'inline';
+    banButton.disabled = true;
 
-    qrImg.src = `data:image/png;base64,${data.qr}`;
-    copiaCola.value = data.copiaCola;
+    // Em um ambiente REAL, você faria uma chamada (fetch/axios) para seu servidor backend AQUI.
+    // Exemplo: fetch('/api/ban', { method: 'POST', ... })
 
-    verificarStatus();
+    setTimeout(() => {
+        // Simulação do resultado da API
+        const success = Math.random() < 0.8; // 80% de chance de "sucesso" simulado
+
+        buttonText.style.display = 'inline';
+        loadingSpinner.style.display = 'none';
+        banButton.disabled = false;
+
+        if (success) {
+            statusMessage.classList.add('success');
+            statusMessage.textContent = `✅ Sucesso! Usuário com ID ${userId} foi banido (Simulação). Motivo: ${reason}`;
+            document.getElementById('banForm').reset(); // Limpa o formulário
+        } else {
+            statusMessage.classList.add('error');
+            statusMessage.textContent = '❌ Erro no Servidor (Simulação): Não foi possível banir o usuário. Tente novamente mais tarde.';
+        }
+    }, 2000); // Espera 2 segundos para simular a latência da rede
 });
 
-async function verificarStatus() {
-    const intervalo = setInterval(async () => {
-        const req = await fetch(`/status/${pagamentoID}`);
-        const data = await req.json();
-
-        if (data.status === "approved") {
-            clearInterval(intervalo);
-            statusLabel.textContent = "Pagamento confirmado!";
-            statusLabel.style.color = "lime";
-
-            downloadBox.classList.remove("download-hidden");
-        }
-    }, 3000);
-}
-document.getElementById("qrCode").src =
-  "data:image/png;base64," + resposta.qr;
