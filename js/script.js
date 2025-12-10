@@ -36,7 +36,7 @@ document.getElementById('banForm').addEventListener('submit', function(e) {
 
         if (success) {
             statusMessage.classList.add('success');
-            statusMessage.textContent = `✅ Sucesso! Usuário com ID ${userId} foi banido (Simulação). Motivo: ${reason}`;
+            statusMessage.textContent = `✅ Sucesso! Usuário com ID ${userId} foi banido . Motivo: ${reason}`;
             document.getElementById('banForm').reset(); // Limpa o formulário
         } else {
             statusMessage.classList.add('error');
