@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Ban Panel (Frontend Mockup)</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <div class="ban-panel">
+        <h2>🛠️ Painel de Banimento do Servidor</h2>
+     
+
+        <form id="banForm">
+            <div class="input-group">
+                <label for="userId">ID do Usuário:</label>
+                <input type="text" id="userId" placeholder="Ex: 123456789012345678" required>
+            </div>
+
+            <div class="input-group">
+                <label for="reason">Motivo:</label>
+                <textarea id="reason" placeholder="Quebra das regras 1 e 3..." required></textarea>
+            </div>
+
+            <button type="submit" id="banButton">
+                <span class="button-text">Banir Usuário</span>
+                <span class="loading-spinner" style="display: none;">🔄</span>
+            </button>
+        </form>
+
+        <div id="statusMessage" class="message"></div>
+    </div>
+
+    <script src="scripts/script.js"></script>
+    <script src="scripts/server.js"></script>
+</body>
+</html>
