@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Free Fire - Dark RGB + Menu Hamburger + Gráficos</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background:#000;
+    color:#fff;
+    margin:0;
+    padding:0;
+}
+.container {
+    max-width:500px;
+    margin:0 auto;
+    padding:20px;
+}
+h1,h2 { color:#0ff; text-shadow:0 0 10px #0ff; }
+input, select {
+    padding:10px;
+    margin:5px;
+    border-radius:5px;
+    border:none;
+    width:80%;
+    background:#111;
+    color:#fff;
+    box-shadow:0 0 5px #0ff;
+}
+button {
+    padding:10px 20px;
+    margin:10px;
+    border:none;
+    border-radius:5px;
+    background: linear-gradient(45deg,#ff00ff,#00ffff,#00ff00);
+    background-size: 200% 200%;
+    color:#fff;
+    cursor:pointer;
+    transition:0.3s;
+    box-shadow:0 0 5px #0ff;
+}
+button:hover {
+    background-position: right center;
+    transform: scale(1.05);
+    box-shadow:0 0 15px #0ff;
+}
+.card {
+    background:#111;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+    box-shadow:0 0 10px #0ff;
+}
+table { width:100%; margin-top:15px; border-collapse:collapse; background:#111; }
+th,td { border:1px solid #333; padding:10px; text-align:center; }
+th { background:#222; color:#0ff; }
+td.vitoria { color:#0f0; font-weight:bold; }
+td.derrota { color:#f00; font-weight:bold; }
+a { color:#0ff; text-decoration:none; }
+a:hover { text-decoration:underline; }
+canvas { margin-top:20px; background:#111; border-radius:10px; }
+
+/* Menu Hamburger */
+#menuBtn {
+    position: fixed;
+    top:15px;
+    right:15px;
+    font-size:30px;
+    cursor:pointer;
+    color:#0ff;
+    display:none; /* só aparece depois do login */
+}
+#sidebar {
+    height:100%;
+    width:0;
+    position:fixed;
+    top:0;
+    right:0;
+    background:#111;
+    overflow-x:hidden;
+    transition:0.3s;
+    padding-top:60px;
+    box-shadow:-2px 0 10px #0ff;
+}
+#sidebar a {
+    padding:15px;
+    text-decoration:none;
+    color:#0ff;
+    display:block;
+    transition:0.3s;
+}
+#sidebar a:hover { background:#0ff1a0; color:#000; }
+</style>
+</head>
+<body>
+
+<div id="menuBtn" onclick="toggleMenu()">☰</div>
+
+<div id="sidebar">
+    <a href="#" onclick="showPainel(); toggleMenu()">Painel</a>
+    <a href="#" onclick="showMinhaConta(); toggleMenu()">Minha Conta</a>
+    <a href="#" onclick="logout()">Sair</a>
+</div>
+
+<div class="container">
+
+<!-- Login e Cadastro -->
+<div id="loginDiv" class="card">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email"><br>
+    <input type="password" id="loginSenha" placeholder="Senha"><br>
+    <button onclick="login()">Entrar</button>
+    <p>ou <a href="#" onclick="showCadastro()">Cadastrar</a></p>
+</div>
+
+<div id="cadastroDiv" class="card" style="display:none;">
+    <h2>Cadastro</h2>
+    <input type="email" id="cadEmail" placeholder="Email"><br>
+    <input type="password" id="cadSenha" placeholder="Senha"><br>
+    <button onclick="cadastrar()">Cadastrar</button>
+    <p>ou <a href="#" onclick="showLogin()">Login</a></p>
+</div>
+
+<!-- Painel principal -->
+<div id="painelDiv" class="card" style="display:none;">
+    <h2>Painel - <span id="userName"></span></h2>
+
+    <h3>Registrar Partida</h3>
+    <input type="text" id="matchName" placeholder="Nome da partida"><br>
+    <input type="number" id="spent" placeholder="Gasto"><br>
+    <input type="number" id="won" placeholder="Ganho"><br>
+    <select id="result">
+        <option value="vitoria">Vitória</option>
+        <option value="derrota">Derrota</option>
+    </select><br>
+    <button onclick="addMatch()">Adicionar</button>
+
+    <h3>Resumo</h3>
+    <p>Total gasto: R$ <span id="totalSpent">0</span></p>
+    <p>Total ganho: R$ <span id="totalWon">0</span></p>
+    <p>Partidas jogadas: <span id="totalMatches">0</span></p>
+    <p>Vitórias: <span id="totalWins">0</span></p>
+    <p>Derrotas: <span id="totalLosses">0</span></p>
+
+    <h3>Histórico de Partidas</h3>
+    <table>
+        <thead>
+            <tr><th>Partida</th><th>Gasto</th><th>Ganho</th><th>Resultado</th></tr>
+        </thead>
+        <tbody id="matchTable"></tbody>
+    </table>
+</div>
+
+<!-- Minha conta -->
+<div id="minhaContaDiv" class="card" style="display:none;">
+    <h2>Minha Conta</h2>
+    <p><strong>Email:</strong> <span id="contaEmail"></span></p>
+    <p><strong>Senha:</strong> <span id="contaSenha"></span></p>
+    <button onclick="deletarConta()">Deletar Conta</button>
+</div>
+
+<!-- Gráficos -->
+<div id="graficoDiv" class="card" style="display:none;">
+    <h2>Gráficos de Desempenho</h2>
+    <canvas id="vitoriaGrafico" width="300" height="300"></canvas>
+    <canvas id="lucroGrafico" width="300" height="300"></canvas>
+</div>
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+let currentUser = null;
+
+// Menu
+function toggleMenu(){
+    const sidebar = document.getElementById('sidebar');
+    sidebar.style.width = sidebar.style.width === '200px' ? '0' : '200px';
+}
+
+// Mostrar seções
+function showCadastro(){ document.getElementById('loginDiv').style.display='none'; document.getElementById('cadastroDiv').style.display='block'; }
+function showLogin(){ document.getElementById('cadastroDiv').style.display='none'; document.getElementById('loginDiv').style.display='block'; }
+function showPainel(){ document.getElementById('painelDiv').style.display='block'; document.getElementById('minhaContaDiv').style.display='none'; document.getElementById('graficoDiv').style.display='block'; }
+function showMinhaConta(){ document.getElementById('painelDiv').style.display='none'; document.getElementById('minhaContaDiv').style.display='block'; document.getElementById('graficoDiv').style.display='block'; }
+
+// Cadastro
+function cadastrar(){
+    const email = document.getElementById('cadEmail').value;
+    const senha = document.getElementById('cadSenha').value;
+    if(!email||!senha){ alert('Preencha todos os campos'); return; }
+    if(usuarios.find(u=>u.email===email)){ alert('Email já cadastrado'); return; }
+    usuarios.push({email, senha, partidas:[]});
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
+    alert('Cadastro realizado!');
+    showLogin();
+}
+
+// Login
+function login(){
+    const email = document.getElementById('loginEmail').value;
+    const senha = document.getElementById('loginSenha').value;
+    const user = usuarios.find(u=>u.email===email && u.senha===senha);
+    if(!user){ alert('Email ou senha incorretos'); return; }
+    currentUser = user;
+    document.getElementById('loginDiv').style.display='none';
+    document.getElementById('cadastroDiv').style.display='none';
+    document.getElementById('painelDiv').style.display='block';
+    document.getElementById('menuBtn').style.display='block';
+    document.getElementById('graficoDiv').style.display='block';
+    document.getElementById('userName').innerText=currentUser.email;
+    loadMatches();
+}
+
+// Logout
+function logout(){
+    currentUser=null;
+    document.getElementById('painelDiv').style.display='none';
+    document.getElementById('minhaContaDiv').style.display='none';
+    document.getElementById('graficoDiv').style.display='none';
+    document.getElementById('loginDiv').style.display='block';
+    document.getElementById('menuBtn').style.display='none';
+    document.getElementById('sidebar').style.width='0';
+}
+
+// Adicionar partida
+function addMatch(){
+    const nome = document.getElementById('matchName').value;
+    const gasto = parseFloat(document.getElementById('spent').value)||0;
+    const ganho = parseFloat(document.getElementById('won').value)||0;
+    const resultado = document.getElementById('result').value;
+    if(!nome){ alert('Digite o nome da partida'); return; }
+    currentUser.partidas.push({nome,gasto,ganho,resultado});
+    saveUsuarios();
+    loadMatches();
+    document.getElementById('matchName').value='';
+    document.getElementById('spent').value='';
+    document.getElementById('won').value='';
+}
+
+// Salvar LocalStorage
+function saveUsuarios(){
+    const index = usuarios.findIndex(u=>u.email===currentUser.email);
+    usuarios[index] = currentUser;
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
+}
+
+// Carregar partidas
+function loadMatches(){
+    const table = document.getElementById('matchTable');
+    if(!table) return;
+    table.innerHTML='';
+    let totalSpent=0,totalWon=0,totalMatches=0,totalWins=0,totalLosses=0;
+    currentUser.partidas.forEach(p=>{
+        const row = table.insertRow();
+        row.insertCell(0).innerText=p.nome;
+        row.insertCell(1).innerText=p.gasto.toFixed(2);
+        row.insertCell(2).innerText=p.ganho.toFixed(2);
+        const cell = row.insertCell(3); cell.innerText=p.resultado==='vitoria'?'Vitória':'Derrota'; cell.className=p.resultado;
+        totalSpent+=p.gasto; totalWon+=p.ganho; totalMatches++;
+        if(p.resultado==='vitoria') totalWins++; else totalLosses++;
+    });
+    document.getElementById('totalSpent').innerText=totalSpent.toFixed(2);
+    document.getElementById('totalWon').innerText=totalWon.toFixed(2);
+    document.getElementById('totalMatches').innerText=totalMatches;
+    document.getElementById('totalWins').innerText=totalWins;
+    document.getElementById('totalLosses').innerText=totalLosses;
+
+    updateCharts(totalWins, totalLosses, totalWon, totalSpent);
+}
+
+// Mostrar conta
+function showMinhaConta(){
+    document.getElementById('painelDiv').style.display='none';
+    document.getElementById('minhaContaDiv').style.display='block';
+    document.getElementById('contaEmail').innerText=currentUser.email;
+    document.getElementById('contaSenha').innerText=currentUser.senha;
+}
+
+// Deletar conta
+function deletarConta(){
+    if(!confirm("Tem certeza que deseja deletar sua conta? Todos os dados serão apagados!")) return;
+    usuarios = usuarios.filter(u=>u.email!==currentUser.email);
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
+    alert("Conta deletada!");
+    logout();
+}
+
+// Gráficos
+function updateCharts(vit, der, ganho, gasto){
+    const ctx1 = document.getElementById('vitoriaGrafico').getContext('2d');
+    if(window.vitoriaChart) window.vitoriaChart.destroy();
+    window.vitoriaChart = new Chart(ctx1, {
+        type:'doughnut',
+        data:{ labels:['Vitórias','Derrotas'], datasets:[{data:[vit,der], backgroundColor:['#0f0','#f00'], hoverOffset:10}] },
+        options:{ plugins:{ title:{ display:true, text:'Vitórias vs Derrotas' } } }
+    });
+
+    const lucro = ganho - gasto;
+    const ctx2 = document.getElementById('lucroGrafico').getContext('2d');
+    if(window.lucroChart) window.lucroChart.destroy();
+    window.lucroChart = new Chart(ctx2, {
+        type:'doughnut',
+        data:{ labels:['Lucro','Gasto'], datasets:[{data:[Math.max(lucro,0), gasto], backgroundColor:['#00ffff','#ff00ff'], hoverOffset:10}] },
+        options:{ plugins:{ title:{ display:true, text:'Lucro vs Gasto' } } }
+    });
+}
+</script>
+</body>
+</html>
