@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Free Fire - Dark RGB + Menu Hamburger + Gráficos</title>
+<title>Painel Free Fire - Dark RGB + Menu Hamburger + Gráficos + Login Persistente</title>
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -169,7 +169,6 @@ canvas { margin-top:20px; background:#111; border-radius:10px; }
 
 </div>
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
@@ -199,6 +198,10 @@ function cadastrar(){
     showLogin();
 }
 
+// Salvar usuário logado
+function saveLoggedUser(){ localStorage.setItem('loggedUser', currentUser.email); }
+function clearLoggedUser(){ localStorage.removeItem('loggedUser'); }
+
 // Login
 function login(){
     const email = document.getElementById('loginEmail').value;
@@ -206,6 +209,24 @@ function login(){
     const user = usuarios.find(u=>u.email===email && u.senha===senha);
     if(!user){ alert('Email ou senha incorretos'); return; }
     currentUser = user;
+    saveLoggedUser();
+    showAfterLogin();
+}
+
+// Logout
+function logout(){
+    currentUser = null;
+    clearLoggedUser();
+    document.getElementById('painelDiv').style.display='none';
+    document.getElementById('minhaContaDiv').style.display='none';
+    document.getElementById('graficoDiv').style.display='none';
+    document.getElementById('loginDiv').style.display='block';
+    document.getElementById('menuBtn').style.display='none';
+    document.getElementById('sidebar').style.width='0';
+}
+
+// Função que mostra o painel após login
+function showAfterLogin(){
     document.getElementById('loginDiv').style.display='none';
     document.getElementById('cadastroDiv').style.display='none';
     document.getElementById('painelDiv').style.display='block';
@@ -213,17 +234,6 @@ function login(){
     document.getElementById('graficoDiv').style.display='block';
     document.getElementById('userName').innerText=currentUser.email;
     loadMatches();
-}
-
-// Logout
-function logout(){
-    currentUser=null;
-    document.getElementById('painelDiv').style.display='none';
-    document.getElementById('minhaContaDiv').style.display='none';
-    document.getElementById('graficoDiv').style.display='none';
-    document.getElementById('loginDiv').style.display='block';
-    document.getElementById('menuBtn').style.display='none';
-    document.getElementById('sidebar').style.width='0';
 }
 
 // Adicionar partida
@@ -308,6 +318,18 @@ function updateCharts(vit, der, ganho, gasto){
         options:{ plugins:{ title:{ display:true, text:'Lucro vs Gasto' } } }
     });
 }
+
+// Verificar login persistente ao carregar
+window.onload = function(){
+    const logged = localStorage.getItem('loggedUser');
+    if(logged){
+        const user = usuarios.find(u=>u.email===logged);
+        if(user){
+            currentUser = user;
+            showAfterLogin();
+        }
+    }
+};
 </script>
 </body>
 </html>
